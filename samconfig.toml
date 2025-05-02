@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 version = 0.1
 [default.deploy.parameters]
 stack_name = "stack-employee-management-appsync-poc-test"
@@ -10,3 +11,17 @@ disable_rollback = true
 image_repositories = []
 s3_prefix = "stack-employee-management-appsync-poc-test"
 parameter_overrides = "LogLevel=\"INFO\""
+=======
+version = 0.1
+[default.deploy.parameters]
+stack_name = "stack-employee-management-appsync-poc-test"
+resolve_s3 = true
+region = "ap-south-1"
+profile = "iamadmin-management"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
+s3_prefix = "stack-employee-management-appsync-poc-test"
+parameter_overrides = "LogLevel=\"INFO\""
+>>>>>>> 68345e55e5887e6fd2baf74e6c997593910c8050

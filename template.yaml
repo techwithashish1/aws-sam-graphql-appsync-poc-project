@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: AWS SAM GraphQL App with AppSync and DynamoDB
@@ -132,4 +133,140 @@ Resources:
 Outputs:
   EmployeeManagementLApiUrl:
     Description: "GraphQL API endpoint"
+=======
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM GraphQL App with AppSync and DynamoDB
+
+Parameters:
+  LogLevel:
+    Type: String
+    Description: Logging level for Lambda functions. Set one of the following DEBUG | INFO | WARNING | ERROR | CRITICAL
+    Default: INFO
+    AllowedValues:
+      - DEBUG
+      - INFO
+      - WARNING
+      - ERROR
+      - CRITICAL
+
+Resources:
+  EmployeeManagementApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: EmployeeManagementAPI
+      AuthenticationType: API_KEY
+
+  EmployeeManagementApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      Expires: 1767225600 # 2025-12-31T00:00:00Z  
+
+  EmployeeManagementSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      DefinitionS3Location: 'src/schema/schema.graphql'
+
+  EmployeeTableDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      Name: EmployeeTableDataSource
+      Type: AMAZON_DYNAMODB
+      DynamoDBConfig:
+        TableName: Employee
+        AwsRegion: !Ref AWS::Region
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+
+  AppSyncServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AppSyncDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Employee
+
+  GetEmployeeDetailsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      TypeName: Query
+      FieldName: getEmployeeDetails
+      DataSourceName: !GetAtt EmployeeTableDataSource.Name
+      CodeS3Location: src/resolvers/query/getEmployee.js
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+
+  ListEmployeeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      TypeName: Query
+      FieldName: listEmployees
+      DataSourceName: !GetAtt EmployeeTableDataSource.Name
+      CodeS3Location: src/resolvers/query/listEmployees.js
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0        
+
+  AddEmployeeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      TypeName: Mutation
+      FieldName: createEmployee
+      DataSourceName: !GetAtt EmployeeTableDataSource.Name
+      CodeS3Location: src/resolvers/mutations/createEmployee.js
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+
+  UpdateEmployeeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      TypeName: Mutation
+      FieldName: updateEmployee
+      DataSourceName: !GetAtt EmployeeTableDataSource.Name
+      CodeS3Location: src/resolvers/mutations/updateEmployee.js
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+
+  DeleteEmployeeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt EmployeeManagementApi.ApiId
+      TypeName: Mutation
+      FieldName: deleteEmployee
+      DataSourceName: !GetAtt EmployeeTableDataSource.Name
+      CodeS3Location: src/resolvers/mutations/deleteEmployee.js
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+
+Outputs:
+  EmployeeManagementLApiUrl:
+    Description: "GraphQL API endpoint"
+>>>>>>> 68345e55e5887e6fd2baf74e6c997593910c8050
     Value: !GetAtt EmployeeManagementApi.GraphQLUrl
